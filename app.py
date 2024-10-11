@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import os
 import requests
 import tweepy
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Download the VADER lexicon
 nltk.download('vader_lexicon')
@@ -12,12 +16,12 @@ nltk.download('vader_lexicon')
 app = Flask(__name__)
 sia = SentimentIntensityAnalyzer()
 
-# Set up API keys
-NEWS_API_KEY = 'your_news_api_key'
-TWITTER_API_KEY = 'your_twitter_api_key'
-TWITTER_API_SECRET_KEY = 'your_twitter_api_secret_key'
-TWITTER_ACCESS_TOKEN = 'your_twitter_access_token'
-TWITTER_ACCESS_TOKEN_SECRET = 'your_twitter_access_token_secret'
+# Read API keys from environment variables
+NEWS_API_KEY = os.getenv('NEWS_API_KEY')
+TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
+TWITTER_API_SECRET_KEY = os.getenv('TWITTER_API_SECRET_KEY')
+TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
+TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
 
 # Set up Twitter API client
 auth = tweepy.OAuth1UserHandler(
