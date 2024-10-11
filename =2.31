@@ -1,0 +1,5 @@
+Requirement already satisfied: requests in /usr/local/python/3.12.1/lib/python3.12/site-packages (2.26.0)
+Requirement already satisfied: urllib3<1.27,>=1.21.1 in /usr/local/python/3.12.1/lib/python3.12/site-packages (from requests) (1.26.20)
+Requirement already satisfied: certifi>=2017.4.17 in /home/codespace/.local/lib/python3.12/site-packages (from requests) (2024.8.30)
+Requirement already satisfied: charset-normalizer~=2.0.0 in /usr/local/python/3.12.1/lib/python3.12/site-packages (from requests) (2.0.12)
+Requirement already satisfied: idna<4,>=2.5 in /home/codespace/.local/lib/python3.12/site-packages (from requests) (3.10)

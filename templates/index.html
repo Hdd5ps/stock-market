@@ -2,21 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stock Market Sentiment Analysis</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5">Enter text to analyze sentiment</h1>
-        <form action="/analyze" method="post" class="mt-3">
-            <div class="form-group">
-                <textarea name="text" class="form-control" rows="5" placeholder="Enter text here..."></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary">Analyze</button>
-        </form>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <h1>Stock Market Sentiment Analysis</h1>
+    <form action="/analyze" method="post">
+        <label for="stock">Enter Stock Symbol:</label>
+        <input type="text" id="stock" name="stock" required>
+        <button type="submit">Analyze</button>
+    </form>
 </body>
 </html>

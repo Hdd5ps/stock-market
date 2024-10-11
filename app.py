@@ -1,69 +1,30 @@
-from flask import Flask, request, render_template
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-import nltk
-import matplotlib.pyplot as plt
-import os
-import requests
+from flask import Flask, render_template, request
 import tweepy
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Download the VADER lexicon
-nltk.download('vader_lexicon')
+import requests
+import nltk
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+import matplotlib.pyplot as plt
+import re
+import os
 
 app = Flask(__name__)
+
+# Set up Tweepy
+consumer_key = 'your_consumer_key'
+consumer_secret = 'your_consumer_secret'
+access_token = 'your_access_token'
+access_token_secret = 'your_access_token_secret'
+
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
+
+# Set up News API
+news_api_key = 'your_news_api_key'
+
+# Set up NLTK
+nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
-
-# Read API keys from environment variables
-NEWS_API_KEY = os.getenv('NEWS_API_KEY')
-TWITTER_API_KEY = os.getenv('TWITTER_API_KEY')
-TWITTER_API_SECRET_KEY = os.getenv('TWITTER_API_SECRET_KEY')
-TWITTER_ACCESS_TOKEN = os.getenv('TWITTER_ACCESS_TOKEN')
-TWITTER_ACCESS_TOKEN_SECRET = os.getenv('TWITTER_ACCESS_TOKEN_SECRET')
-
-# Set up Twitter API client
-auth = tweepy.OAuth1UserHandler(
-    TWITTER_API_KEY, TWITTER_API_SECRET_KEY,
-    TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET
-)
-twitter_api = tweepy.API(auth)
-
-def fetch_news_articles(query):
-    url = f'https://newsapi.org/v2/everything?q={query}&apiKey={NEWS_API_KEY}'
-    response = requests.get(url)
-    articles = response.json().get('articles', [])
-    return articles
-
-def fetch_tweets(query):
-    try:
-        tweets = twitter_api.search_tweets(q=query, count=10, lang='en')
-        return tweets
-    except tweepy.errors.Unauthorized as e:
-        print(f"Unauthorized error: {e}")
-        return []
-    except tweepy.errors.TweepyException as e:
-        print(f"Error fetching tweets: {e}")
-        return []
-
-def create_sentiment_chart(sentiment, text):
-    labels = ['Positive', 'Neutral', 'Negative', 'Compound']
-    scores = [sentiment['pos'], sentiment['neu'], sentiment['neg'], sentiment['compound']]
-    
-    plt.figure(figsize=(8, 6))
-    plt.bar(labels, scores, color=['green', 'blue', 'red', 'purple'])
-    plt.xlabel('Sentiment')
-    plt.ylabel('Scores')
-    plt.title(f'Sentiment Analysis for: {text[:50]}...')
-    plt.ylim(0, 1)
-    
-    # Save the plot as an image file
-    chart_path = os.path.join('static', 'sentiment_chart.png')
-    plt.savefig(chart_path)
-    plt.close()
-    
-    return chart_path
 
 @app.route('/')
 def index():
@@ -71,15 +32,68 @@ def index():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    query = request.form['text']
-    news_articles = fetch_news_articles(query)
-    tweets = fetch_tweets(query)
-    
-    combined_text = ' '.join([article['title'] for article in news_articles] + [tweet.text for tweet in tweets])
-    sentiment = sia.polarity_scores(combined_text)
-    chart_path = create_sentiment_chart(sentiment, combined_text)
-    
-    return render_template('result.html', sentiment=sentiment, text=query, chart_path=chart_path, news_articles=news_articles, tweets=tweets)
+    stock = request.form['stock']
+    tweets = fetch_tweets(stock)
+    news_articles = fetch_news_articles(stock)
+    tweet_sentiments = analyze_sentiment(tweets)
+    news_sentiments = analyze_sentiment(news_articles)
+    create_sentiment_chart(tweet_sentiments, news_sentiments, stock)
+    return render_template('result.html', stock=stock, tweet_sentiments=tweet_sentiments, news_sentiments=news_sentiments)
+
+def fetch_tweets(stock):
+    try:
+        tweets = api.search(q=stock, count=100, lang='en')
+        return [clean_text(tweet.text) for tweet in tweets]
+    except Exception as e:
+        print(f"Error fetching tweets: {e}")
+        return []
+
+def fetch_news_articles(stock):
+    try:
+        url = f'https://newsapi.org/v2/everything?q={stock}&apiKey={news_api_key}'
+        response = requests.get(url)
+        articles = response.json().get('articles', [])
+        return [clean_text(article['title']) for article in articles]
+    except Exception as e:
+        print(f"Error fetching news articles: {e}")
+        return []
+
+def clean_text(text):
+    text = re.sub(r'http\S+', '', text)  # Remove URLs
+    text = re.sub(r'@\w+', '', text)  # Remove mentions
+    text = re.sub(r'#\w+', '', text)  # Remove hashtags
+    text = re.sub(r'[^A-Za-z0-9\s]+', '', text)  # Remove special characters
+    return text
+
+def analyze_sentiment(texts):
+    sentiments = {'positive': 0, 'neutral': 0, 'negative': 0}
+    for text in texts:
+        score = sia.polarity_scores(text)
+        if score['compound'] > 0.05:
+            sentiments['positive'] += 1
+        elif score['compound'] < -0.05:
+            sentiments['negative'] += 1
+        else:
+            sentiments['neutral'] += 1
+    return sentiments
+
+def create_sentiment_chart(tweet_sentiments, news_sentiments, stock):
+    labels = ['Positive', 'Neutral', 'Negative']
+    tweet_values = [tweet_sentiments['positive'], tweet_sentiments['neutral'], tweet_sentiments['negative']]
+    news_values = [news_sentiments['positive'], news_sentiments['neutral'], news_sentiments['negative']]
+
+    x = range(len(labels))
+
+    plt.figure(figsize=(10, 5))
+    plt.bar(x, tweet_values, width=0.4, label='Tweets', align='center')
+    plt.bar(x, news_values, width=0.4, label='News', align='edge')
+    plt.xlabel('Sentiment')
+    plt.ylabel('Count')
+    plt.title(f'Sentiment Analysis for {stock}')
+    plt.xticks(x, labels)
+    plt.legend()
+    plt.savefig('static/sentiment_chart.png')
+    plt.close()
 
 if __name__ == '__main__':
     app.run(debug=True)

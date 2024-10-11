@@ -2,40 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Sentiment Analysis Result</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentiment Analysis Results</title>
 </head>
 <body>
-    <div class="container">
-        <h1 class="mt-5">Sentiment Analysis Result</h1>
-        <p><strong>Text:</strong> {{ text }}</p>
-        <p><strong>Sentiment Scores:</strong></p>
-        <ul>
-            <li>Positive: {{ sentiment['pos'] }}</li>
-            <li>Neutral: {{ sentiment['neu'] }}</li>
-            <li>Negative: {{ sentiment['neg'] }}</li>
-            <li>Compound: {{ sentiment['compound'] }}</li>
-        </ul>
-        <img src="{{ url_for('static', filename='sentiment_chart.png') }}" alt="Sentiment Chart" class="img-fluid">
-        
-        <h2 class="mt-5">News Articles</h2>
-        <ul class="list-group">
-            {% for article in news_articles %}
-            <li class="list-group-item"><a href="{{ article['url'] }}" target="_blank">{{ article['title'] }}</a></li>
-            {% endfor %}
-        </ul>
-        
-        <h2 class="mt-5">Tweets</h2>
-        <ul class="list-group">
-            {% for tweet in tweets %}
-            <li class="list-group-item">{{ tweet.text }}</li>
-            {% endfor %}
-        </ul>
-        
-        <a href="/" class="btn btn-secondary mt-3">Analyze another text</a>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <h1>Sentiment Analysis Results for {{ stock }}</h1>
+    <h2>Tweets</h2>
+    <p>Positive: {{ tweet_sentiments['positive'] }}</p>
+    <p>Neutral: {{ tweet_sentiments['neutral'] }}</p>
+    <p>Negative: {{ tweet_sentiments['negative'] }}</p>
+    <h2>News Articles</h2>
+    <p>Positive: {{ news_sentiments['positive'] }}</p>
+    <p>Neutral: {{ news_sentiments['neutral'] }}</p>
+    <p>Negative: {{ news_sentiments['negative'] }}</p>
+    <img src="{{ url_for('static', filename='sentiment_chart.png') }}" alt="Sentiment Chart">
 </body>
 </html>
