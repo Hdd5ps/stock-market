@@ -1,7 +1,7 @@
-Flask==3.0.3
-nltk==3.6.7
-matplotlib==3.5.1  # Updated version
-requests==2.26.0
-tweepy==4.4.0
+Flask==2.0.3
+Werkzeug==2.0.3
 gunicorn==20.1.0
-python-dotenv==1.0.0
+nltk==3.6.3
+tweepy==3.10.0
+requests==2.25.1
+matplotlib==3.5.1

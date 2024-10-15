@@ -3,14 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Market Sentiment Analysis</title>
+    <title>Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
-    <h1>Stock Market Sentiment Analysis</h1>
-    <form action="/analyze" method="post">
-        <label for="stock">Enter Stock Symbol:</label>
-        <input type="text" id="stock" name="stock" required>
-        <button type="submit">Analyze</button>
-    </form>
+    <div class="container">
+        <h1 class="mt-5">Sentiment Analysis</h1>
+        <form action="{{ url_for('analyze') }}" method="post">
+            <div class="form-group">
+                <label for="stock">Enter stock symbol:</label>
+                <input type="text" class="form-control" id="stock" name="stock" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Analyze</button>
+        </form>
+    </div>
 </body>
 </html>

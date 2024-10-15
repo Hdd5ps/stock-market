@@ -3,18 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis Results</title>
+    <title>Analysis Result</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
 </head>
 <body>
-    <h1>Sentiment Analysis Results for {{ stock }}</h1>
-    <h2>Tweets</h2>
-    <p>Positive: {{ tweet_sentiments['positive'] }}</p>
-    <p>Neutral: {{ tweet_sentiments['neutral'] }}</p>
-    <p>Negative: {{ tweet_sentiments['negative'] }}</p>
-    <h2>News Articles</h2>
-    <p>Positive: {{ news_sentiments['positive'] }}</p>
-    <p>Neutral: {{ news_sentiments['neutral'] }}</p>
-    <p>Negative: {{ news_sentiments['negative'] }}</p>
-    <img src="{{ url_for('static', filename='sentiment_chart.png') }}" alt="Sentiment Chart">
+    <div class="container">
+        <h1 class="mt-5">Analysis Result for {{ stock }}</h1>
+        <div class="alert alert-info">
+            <h2>Tweet Sentiments</h2>
+            <p>Positive: {{ tweet_sentiments['positive'] }}</p>
+            <p>Neutral: {{ tweet_sentiments['neutral'] }}</p>
+            <p>Negative: {{ tweet_sentiments['negative'] }}</p>
+        </div>
+        <div class="alert alert-info">
+            <h2>News Sentiments</h2>
+            <p>Positive: {{ news_sentiments['positive'] }}</p>
+            <p>Neutral: {{ news_sentiments['neutral'] }}</p>
+            <p>Negative: {{ news_sentiments['negative'] }}</p>
+        </div>
+        <img src="{{ url_for('static', filename='sentiment_chart.png') }}" alt="Sentiment Chart">
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">Back</a>
+    </div>
 </body>
 </html>

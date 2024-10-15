@@ -1,4 +1,4 @@
-#!/workspaces/stock-market/venv/bin/python
+#!/workspaces/stock-market/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

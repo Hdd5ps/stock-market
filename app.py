@@ -6,21 +6,24 @@ from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import matplotlib.pyplot as plt
 import re
 import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 app = Flask(__name__)
 
 # Set up Tweepy
-consumer_key = 'your_consumer_key'
-consumer_secret = 'your_consumer_secret'
-access_token = 'your_access_token'
-access_token_secret = 'your_access_token_secret'
+consumer_key = os.getenv('CONSUMER_KEY')
+consumer_secret = os.getenv('CONSUMER_SECRET')
+access_token = os.getenv('ACCESS_TOKEN')
+access_token_secret = os.getenv('ACCESS_TOKEN_SECRET')
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
 
 # Set up News API
-news_api_key = 'your_news_api_key'
+news_api_key = os.getenv('NEWS_API_KEY')
 
 # Set up NLTK
 nltk.download('vader_lexicon')
@@ -32,20 +35,24 @@ def index():
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
-    stock = request.form['stock']
-    tweets = fetch_tweets(stock)
-    news_articles = fetch_news_articles(stock)
-    tweet_sentiments = analyze_sentiment(tweets)
-    news_sentiments = analyze_sentiment(news_articles)
-    create_sentiment_chart(tweet_sentiments, news_sentiments, stock)
-    return render_template('result.html', stock=stock, tweet_sentiments=tweet_sentiments, news_sentiments=news_sentiments)
+    try:
+        stock = request.form['stock']
+        tweets = fetch_tweets(stock)
+        news_articles = fetch_news_articles(stock)
+        tweet_sentiments = analyze_sentiment(tweets)
+        news_sentiments = analyze_sentiment(news_articles)
+        create_sentiment_chart(tweet_sentiments, news_sentiments, stock)
+        return render_template('result.html', stock=stock, tweet_sentiments=tweet_sentiments, news_sentiments=news_sentiments)
+    except Exception as e:
+        logging.error(f"Error in analyze route: {e}")
+        return "Internal Server Error", 500
 
 def fetch_tweets(stock):
     try:
         tweets = api.search(q=stock, count=100, lang='en')
         return [clean_text(tweet.text) for tweet in tweets]
     except Exception as e:
-        print(f"Error fetching tweets: {e}")
+        logging.error(f"Error fetching tweets: {e}")
         return []
 
 def fetch_news_articles(stock):
@@ -55,7 +62,7 @@ def fetch_news_articles(stock):
         articles = response.json().get('articles', [])
         return [clean_text(article['title']) for article in articles]
     except Exception as e:
-        print(f"Error fetching news articles: {e}")
+        logging.error(f"Error fetching news articles: {e}")
         return []
 
 def clean_text(text):
@@ -78,22 +85,25 @@ def analyze_sentiment(texts):
     return sentiments
 
 def create_sentiment_chart(tweet_sentiments, news_sentiments, stock):
-    labels = ['Positive', 'Neutral', 'Negative']
-    tweet_values = [tweet_sentiments['positive'], tweet_sentiments['neutral'], tweet_sentiments['negative']]
-    news_values = [news_sentiments['positive'], news_sentiments['neutral'], news_sentiments['negative']]
+    try:
+        labels = ['Positive', 'Neutral', 'Negative']
+        tweet_values = [tweet_sentiments['positive'], tweet_sentiments['neutral'], tweet_sentiments['negative']]
+        news_values = [news_sentiments['positive'], news_sentiments['neutral'], news_sentiments['negative']]
 
-    x = range(len(labels))
+        x = range(len(labels))
 
-    plt.figure(figsize=(10, 5))
-    plt.bar(x, tweet_values, width=0.4, label='Tweets', align='center')
-    plt.bar(x, news_values, width=0.4, label='News', align='edge')
-    plt.xlabel('Sentiment')
-    plt.ylabel('Count')
-    plt.title(f'Sentiment Analysis for {stock}')
-    plt.xticks(x, labels)
-    plt.legend()
-    plt.savefig('static/sentiment_chart.png')
-    plt.close()
+        plt.figure(figsize=(10, 5))
+        plt.bar(x, tweet_values, width=0.4, label='Tweets', align='center')
+        plt.bar(x, news_values, width=0.4, label='News', align='edge')
+        plt.xlabel('Sentiment')
+        plt.ylabel('Count')
+        plt.title(f'Sentiment Analysis for {stock}')
+        plt.xticks(x, labels)
+        plt.legend()
+        plt.savefig('static/sentiment_chart.png')
+        plt.close()
+    except Exception as e:
+        logging.error(f"Error creating sentiment chart: {e}")
 
 if __name__ == '__main__':
     app.run(debug=True)
